@@ -7,3 +7,7 @@ pub struct Project {
     pub best_before: usize,
     pub n_roles: usize,
 }
+
+pub struct Collaborator {
+    pub skills: HashMap<String, u64>,
+}
