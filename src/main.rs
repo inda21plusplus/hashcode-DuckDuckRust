@@ -33,7 +33,7 @@ fn main() {
                 .map(|_| {
                     let skillname = word();
                     let level = word().parse().unwrap();
-                    (skillname.to_string(), level)
+                    (skillname, level)
                 })
                 .collect();
             types::Project {
