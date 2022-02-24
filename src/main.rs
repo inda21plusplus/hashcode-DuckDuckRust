@@ -1,3 +1,6 @@
+use std::io::{stdin, Read};
+
 fn main() {
-    println!("Hello, world!");
+    let mut input = String::new();
+    stdin().lock().read_to_string(&mut input).unwrap();
 }
