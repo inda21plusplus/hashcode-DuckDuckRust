@@ -23,7 +23,7 @@ fn main() {
         })
         .collect();
 
-    let projects: Vec<types::Project> = (0..p)
+    let mut projects: Vec<types::Project> = (0..p)
         .map(|_| {
             let name = word();
             let length = word().parse().unwrap();
@@ -47,4 +47,6 @@ fn main() {
             }
         })
         .collect();
+
+    projects.sort_by_key(|p| p.best_before as i64 - p.length as i64);
 }
