@@ -11,13 +11,13 @@ fn main() {
     let c = word().parse::<usize>().unwrap();
     let p = word().parse::<usize>().unwrap();
 
-    let contributors: Vec<(&str, Vec<(&str, usize)>)> = (0..c)
+    let contributors: Vec<types::Collaborator> = (0..c)
         .map(|_| {
             let name = word();
             let skills = (0usize..word().parse().unwrap())
-                .map(|_| (word(), word().parse::<usize>().unwrap()))
+                .map(|_| (word(), word().parse::<u64>().unwrap()))
                 .collect();
-            (name, skills)
+            types::Collaborator { name, skills }
         })
         .collect();
 

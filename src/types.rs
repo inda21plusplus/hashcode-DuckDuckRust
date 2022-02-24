@@ -10,5 +10,6 @@ pub struct Project<'i> {
 }
 
 pub struct Collaborator<'i> {
+    pub name: &'i str,
     pub skills: HashMap<&'i str, u64>,
 }
