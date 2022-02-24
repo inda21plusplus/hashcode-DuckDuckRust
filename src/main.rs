@@ -1,3 +1,6 @@
+use rand;
+use rand::prelude::*;
+
 use std::io::{stdin, Read};
 
 mod types;
@@ -16,6 +19,8 @@ fn main() {
 
     let c = word().parse::<usize>().unwrap();
     let p = word().parse::<usize>().unwrap();
+
+    let mut rng = rand::thread_rng();
 
     let contributors: Vec<types::Collaborator> = (0..c)
         .map(|_| {
@@ -66,25 +71,42 @@ fn main() {
 
     let mut time = 0;
 
+    projects.sort_by_key(|p| p.best_before - p.length);
+
     let mut i = 0;
 
     'outer: loop {
-        projects.sort_by_key(|p| urgency(time, p));
-
         if i % 5 == 0 {
             eprintln!("iter: {}, time: {}", i, time);
         }
 
-        'proj: for project in projects.drain(..).filter(|p| score(time, &p) >= 0) {
+        //projects.shuffle(&mut rng);
+        projects.sort_by_key(|p| p.best_before - p.length);
+
+        'proj: for project in projects.drain(..) {
+            if rng.gen_range(0..100) < 5 {
+                continue;
+            }
+
             let mut chosen = Vec::new();
 
             for &(skill_name, required) in &project.skills {
                 let mut closest_match: Option<(usize, usize)> = None;
+                let required = if chosen
+                    .iter()
+                    .map(|c| &people[*c])
+                    .any(|p: &Collaborator| p.skills.get(skill_name).unwrap_or(&0) >= &required)
+                {
+                    required - 1
+                } else {
+                    required
+                };
+
                 for (c, coll) in people.iter_mut().enumerate() {
                     let skill_level = coll.skills.get(skill_name).unwrap_or(&0);
                     if skill_level >= &required {
                         if let Some(closest) = closest_match {
-                            if skill_level < &closest.1 && coll.occupied_until <= time {
+                            if skill_level > &closest.1 && coll.occupied_until <= time {
                                 closest_match = Some((c, *skill_level));
                             }
                         } else {
@@ -109,11 +131,18 @@ fn main() {
 
             let end_time = time + project.length;
 
-            let cur = Assignment {
+            let mut cur = Assignment {
                 collaborators: chosen,
                 project,
                 end_time,
             };
+
+            for (person, skill) in cur.collaborators.iter().zip(cur.project.skills.iter()) {
+                let s = people[*person].skills.entry(skill.0).or_insert(0);
+                if *s <= skill.1 {
+                    *s += 1;
+                }
+            }
 
             end_times.push(OrderedAssignment(end_time));
 
@@ -141,6 +170,7 @@ fn main() {
 
     println!("{}", plan.len());
     let mut sum = 0;
+    let n = plan.len();
     for assignment in plan {
         println!("{}", assignment.project.name);
         println!(
@@ -154,7 +184,7 @@ fn main() {
         );
         sum += score(assignment.end_time, &assignment.project).max(0);
     }
-    eprintln!("{}", sum);
+    eprintln!("score: {}, projs: {}", sum, n);
 }
 
 fn score(time: usize, p: &Project) -> i64 {
